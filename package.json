@@ -1,0 +1,22 @@
+{
+  "name": "scaffolding",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Denis Molodtsov",
+  "license": "MIT",
+  "dependencies": {
+    "sharepoint-promise": "0.0.16"
+  },
+  "devDependencies": {
+    "cpass": "^1.0.1",
+    "gulp": "^3.9.1",
+    "gulp-spsave": "^2.0.2",
+    "gulp-watch": "^4.3.9",
+    "sp-request": "^2.0.2",
+    "sppull": "^1.0.0"
+  }
+}
