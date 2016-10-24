@@ -53,13 +53,16 @@ gulp.task("replace", function () {
  });
 
 
-gulp.task('getFields',function(){
+gulp.task('getFields',function() {
     //read more here: https://github.com/s-KaiNet/sp-request
    
     var cpass = new Cpass();
     var credentialOptions = {
         'username':"dmolodtsov@jolera.com",
-        'password': cpass.decode("14f3414621f03df837338e685c231b720243c83d242829f29bb594d7d4b7b13aca4a5aa5d23b4cc21f9d7b48dd69d8acU+mmWaDFhSdyAtRrYGSCvQ=="), //TODO: you can encript your credentials with CPASS module
+        //jolera:
+        'password': cpass.decode("01f8599c267e266d3703aa63310f45084b88ca8af641e99aff47cc31b64e1f4b0b42817a8c9d83a30c4d5d985eab5dc93LhKvmjEU1Gkz+ca9qCX/w=="), //TODO: you can encript your credentials with CPASS module
+        //home:
+        //'password': cpass.decode("14f3414621f03df837338e685c231b720243c83d242829f29bb594d7d4b7b13aca4a5aa5d23b4cc21f9d7b48dd69d8acU+mmWaDFhSdyAtRrYGSCvQ=="), //TODO: you can encript your credentials with CPASS module
         //'relyingParty':"",
         //'adfsUrl':"",
     };
@@ -110,3 +113,15 @@ spr.get("https://jolera365.sharepoint.com/sites/senate/subsite/_api/web/lists/Ge
   });
 
 });
+
+
+//Get new secure string pass:
+//Example of Use:
+//gulp createPass --pass MySecretPass
+gulp.task('createPass', function(){
+    var Cpass = require("cpass");
+    var cpass = new Cpass();
+    var password = process.argv[4];
+    var secured = cpass.encode(password);
+    console.log(secured);
+} );
