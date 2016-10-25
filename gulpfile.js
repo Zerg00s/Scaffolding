@@ -4,6 +4,9 @@ var spsave = require("gulp-spsave");
 var watch = require("gulp-watch");
 var config = require('./gulp.config');
 var Cpass = require("cpass");
+var _privateConfig = require("./config/_private.conf.json")
+
+console.log(_privateConfig);
 
 gulp.task('sppull-all', function(cb) {
     console.log("Pulling from SharePoint");
@@ -54,44 +57,36 @@ gulp.task("replace", function () {
 
 
 gulp.task('getFields',function() {
-    //read more here: https://github.com/s-KaiNet/sp-request
-   
+    //read more about Cpass here: https://github.com/s-KaiNet/sp-request
     var cpass = new Cpass();
     var credentialOptions = {
-        'username':"dmolodtsov@jolera.com",
-        //jolera:
-        'password': cpass.decode("01f8599c267e266d3703aa63310f45084b88ca8af641e99aff47cc31b64e1f4b0b42817a8c9d83a30c4d5d985eab5dc93LhKvmjEU1Gkz+ca9qCX/w=="), //TODO: you can encript your credentials with CPASS module
-        //home:
-        //'password': cpass.decode("14f3414621f03df837338e685c231b720243c83d242829f29bb594d7d4b7b13aca4a5aa5d23b4cc21f9d7b48dd69d8acU+mmWaDFhSdyAtRrYGSCvQ=="), //TODO: you can encript your credentials with CPASS module
-        //'relyingParty':"",
-        //'adfsUrl':"",
+        'username': _privateConfig.username,
+        'password': cpass.decode(_privateConfig.password),
     };
 
+    function initializeField(result) {
+        var retVal = {};
+        retVal.Id = result.Id;
+        retVal.FieldDisplayName = result.Title;
+        retVal.FieldInternalName = result.InternalName;
+        retVal.FieldType = result.TypeAsString;
+        retVal.Required = result.Required;
+        retVal.ReadOnlyField = result.ReadOnlyField;
+        if (result.Choices) {
+            retVal.Choices = result.Choices.results;
+        }
 
-function initializeField(result) {
-    var retVal = {};
-    retVal.Id = result.Id;
-    retVal.FieldDisplayName = result.Title;
-    retVal.FieldInternalName = result.InternalName;
-    retVal.FieldType = result.TypeAsString;
-    retVal.Required = result.Required;
-    retVal.ReadOnlyField = result.ReadOnlyField;
-    if (result.Choices) {
-        retVal.Choices = result.Choices.results;
-    }
+        return retVal;
+    };
 
-    return retVal;
-};
+    var spr = require('sp-request').create(credentialOptions);
 
-var spr = require('sp-request').create(credentialOptions);
-
-spr.get("https://jolera365.sharepoint.com/sites/senate/subsite/_api/web/lists/GetByTitle('SampleList')/fields?$filter=Hidden eq false")
-  .then(function (response) {
+    spr.get("https://jolera365.sharepoint.com/sites/senate/subsite/_api/web/lists/GetByTitle('SampleList')/fields?$filter=Hidden eq false")
+    .then(function (response) {
     
-    var results = response.body.d.results;
-    var f = {};
-    for (var x = 0; x < results.length; x++) {
-        //  if (!results[x].ReadOnlyField) {
+        var results = response.body.d.results;
+        var f = {};
+        for (var x = 0; x < results.length; x++) {
             if (!results[x].Hidden) {
                 if (results[x].InternalName != 'ContentType') {
                     if (results[x].InternalName != 'Attachments') {
@@ -100,17 +95,14 @@ spr.get("https://jolera365.sharepoint.com/sites/senate/subsite/_api/web/lists/Ge
                     }
                 }
             }
-        // }
-    }
+        }
 
-    //console.log('result: ' + JSON.stringify(response.body.d.results, null, 4) );
-    console.log('Title: ' + JSON.stringify(f.Title, null, 4));
+        console.log('Title: ' + JSON.stringify(f, null, 4));
 
-
-  })
-  .catch(function(err){
-    console.log(err);
-  });
+    })
+    .catch(function(err){
+        console.log(err);
+    });
 
 });
 
