@@ -81,7 +81,7 @@ gulp.task('getFields',function() {
 
     var spr = require('sp-request').create(credentialOptions);
 
-    spr.get("https://jolera365.sharepoint.com/sites/senate/subsite/_api/web/lists/GetByTitle('SampleList')/fields?$filter=Hidden eq false")
+    spr.get(config.getFields.siteUrl + "/_api/web/lists/GetByTitle('" + config.getFields.listTitle + "')/fields?$filter=Hidden eq false")
     .then(function (response) {
     
         var results = response.body.d.results;
