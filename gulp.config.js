@@ -28,6 +28,10 @@ module.exports = (function() {
         watch: {
             assets: appConf.dlRootFolder.replace("./", "") + "/**/*.*",
             base: appConf.dlRootFolder.replace("./", "")
+        },
+        getFields: {
+            listTitle: "Travel Requests",
+            siteUrl: context.siteUrl
         }
     };
 
