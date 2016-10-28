@@ -9,6 +9,7 @@
   "author": "Denis Molodtsov",
   "license": "MIT",
   "dependencies": {
+    "bower-installer": "^1.2.0",
     "sharepoint-promise": "0.0.16"
   },
   "devDependencies": {

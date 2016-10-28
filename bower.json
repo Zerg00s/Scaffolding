@@ -2,5 +2,14 @@
   "name": "scaffolding",
   "license": "MIT",
   "dependencies": {
+    "bootstrap.min": "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css",
+    "boot": "^3.3.7",
+    "bower-search-result": "http://media02.hongkiat.com/bower-package-manager/bower-search-result.jpg"
+  },
+  "install": {
+    "path": "src/libs"
+  },
+  "devDependencies": {
+    "angular": "^1.5.8"
   }
 }

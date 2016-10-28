@@ -97,12 +97,91 @@ gulp.task('getFields',function() {
             }
         }
 
-        console.log('Title: ' + JSON.stringify(f, null, 4));
+        //console.log('Title: ' + JSON.stringify(f, null, 4));
 
     })
     .catch(function(err){
         console.log(err);
     });
+
+//---------- CEWP
+    var webPartXml = '<?xml version="1.0" encoding="utf-8"?>' +
+'<WebPart xmlns="http://schemas.microsoft.com/WebPart/v2">' +
+    '<Assembly>Microsoft.SharePoint, Version=16.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c</Assembly>' + 
+    '<TypeName>Microsoft.SharePoint.WebPartPages.ContentEditorWebPart</TypeName>' + 
+    '<Title>$Resources:core,ContentEditorWebPartTitle;</Title>' +
+    '<Description>$Resources:core,ContentEditorWebPartDescription;</Description>' +
+    '<PartImageLarge>/_layouts/15/images/mscontl.gif</PartImageLarge>' +
+'</WebPart>';
+    var zoneId = "Main";
+    var zoneIndex = 10;
+    var pageUrl = "/sites/senate/subsite/Lists/custom/NewForm.aspx"; 
+
+    importWebPart("https://jolera365.sharepoint.com/sites/senate/subsite", pageUrl , webPartXml, zoneId, zoneIndex);
+
+    function importWebPart(webUrl, pageUrl, webPartXml, zoneId,zoneIndex) {
+        var url = webUrl + "/_api/web/getfilebyserverrelativeurl('" + pageUrl + "')/getlimitedwebpartmanager(1)/ImportWebPart";
+       
+        spr.requestDigest('https://jolera365.sharepoint.com/sites/senate/subsite/')
+        .then(function (digest) {
+            return spr.post(url, {
+                body: {"webPartXml": webPartXml},
+                headers: {
+                    'X-RequestDigest': digest,
+                    "Accept": "application/json;odata=verbose",
+                }
+            });
+        })
+        .then(function (response) {
+            if (response.statusCode === 204) {
+                console.log('Web part has been imported successfully');
+            }
+            else{
+                console.log("status code: " +response.statusCode);
+                console.log("Message: " + JSON.stringify(response.body.d));
+            }
+          
+        }, function (err) {
+            if (err.statusCode === 404) {
+                console.log('Page not found!');
+            } else {
+               console.log(err);
+            }
+        });
+    }
+
+
+    
+//---------- CEWP END
+
+
+/// LIST TEST
+return;
+spr.requestDigest('https://jolera365.sharepoint.com/sites/senate/subsite')
+  .then(function (digest) {
+    return spr.post('https://jolera365.sharepoint.com/sites/senate/subsite/_api/web/lists/GetByTitle(\'custom\')', {
+      body: {
+        '__metadata': { 'type': 'SP.List' },
+        'Title': 'TestList'
+      },
+      headers: {
+        'X-RequestDigest': digest,
+        'X-HTTP-Method': 'MERGE',
+        'IF-MATCH': '*'
+      }
+    });
+  })
+  .then(function (response) {
+    if (response.statusCode === 204) {
+      console.log('List title updated!');
+    }
+  }, function (err) {
+    if (err.statusCode === 404) {
+      console.log('List not found!');
+    } else {
+      console.log(err);
+    }
+  });
 
 });
 
