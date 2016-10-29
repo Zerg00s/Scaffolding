@@ -5,6 +5,7 @@ var watch = require("gulp-watch");
 var config = require('./gulp.config');
 var Cpass = require("cpass");
 var _privateConfig = require("./config/_private.conf.json")
+var csomapi = require('csom-node')
 
 console.log(_privateConfig);
 
@@ -56,6 +57,9 @@ gulp.task("replace", function () {
  });
 
 
+
+
+//get list of fields from the sp list
 gulp.task('getFields',function() {
     //read more about Cpass here: https://github.com/s-KaiNet/sp-request
     var cpass = new Cpass();
@@ -104,91 +108,47 @@ gulp.task('getFields',function() {
         console.log(err);
     });
 
-//---------- CEWP
-    var webPartXml = '<?xml version="1.0" encoding="utf-8"?>' +
-'<WebPart xmlns="http://schemas.microsoft.com/WebPart/v2">' +
-    '<Assembly>Microsoft.SharePoint, Version=16.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c</Assembly>' + 
-    '<TypeName>Microsoft.SharePoint.WebPartPages.ContentEditorWebPart</TypeName>' + 
-    '<Title>$Resources:core,ContentEditorWebPartTitle;</Title>' +
-    '<Description>$Resources:core,ContentEditorWebPartDescription;</Description>' +
-    '<PartImageLarge>/_layouts/15/images/mscontl.gif</PartImageLarge>' +
-'</WebPart>';
-    var zoneId = "Main";
-    var zoneIndex = 10;
-    var pageUrl = "/sites/senate/subsite/Lists/custom/NewForm.aspx"; 
+})
 
-    importWebPart("https://jolera365.sharepoint.com/sites/senate/subsite", pageUrl , webPartXml, zoneId, zoneIndex);
+gulp.task('csom', function(){
+    var Cpass = require("cpass");
+    var cpass = new Cpass();
+    csomapi.setLoaderOptions({url: config.csom.siteUrl});  //set CSOM library settings
+    var authCtx = new AuthenticationContext(config.csom.siteUrl);
+    authCtx.acquireTokenForUser(_privateConfig.username, cpass.decode(_privateConfig.password), function (err, data) {
 
-    function importWebPart(webUrl, pageUrl, webPartXml, zoneId,zoneIndex) {
-        var url = webUrl + "/_api/web/getfilebyserverrelativeurl('" + pageUrl + "')/getlimitedwebpartmanager(1)/ImportWebPart";
-       
-        spr.requestDigest('https://jolera365.sharepoint.com/sites/senate/subsite/')
-        .then(function (digest) {
-            return spr.post(url, {
-                body: {"webPartXml": webPartXml},
-                headers: {
-                    'X-RequestDigest': digest,
-                    "Accept": "application/json;odata=verbose",
-                }
-            });
-        })
-        .then(function (response) {
-            if (response.statusCode === 204) {
-                console.log('Web part has been imported successfully');
-            }
-            else{
-                console.log("status code: " +response.statusCode);
-                console.log("Message: " + JSON.stringify(response.body.d));
-            }
-          
-        }, function (err) {
-            if (err.statusCode === 404) {
-                console.log('Page not found!');
-            } else {
-               console.log(err);
-            }
-        });
-    }
+        var ctx = new SP.ClientContext(config.csom.siteRelativeUrl);  //set root web
+        authCtx.setAuthenticationCookie(ctx);  //authenticate         
+        var web = ctx.get_web();
 
+        var webPartXml = '<?xml version="1.0" encoding="utf-8"?>' +
+                        '<WebPart xmlns="http://schemas.microsoft.com/WebPart/v2">' +
+                            '<Assembly>Microsoft.SharePoint, Version=16.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c</Assembly>' + 
+                            '<TypeName>Microsoft.SharePoint.WebPartPages.ContentEditorWebPart</TypeName>' + 
+                            '<Title>$Resources:core,ContentEditorWebPartTitle;</Title>' +
+                            '<Description>$Resources:core,ContentEditorWebPartDescription;</Description>' +
+                            '<PartImageLarge>/_layouts/15/images/mscontl.gif</PartImageLarge>' +
+                        '</WebPart>';
 
-    
-//---------- CEWP END
+        var file = web.getFileByServerRelativeUrl(config.csom.siteRelativeUrl + config.csom.webPartPage);
+        var webPartMngr = file.getLimitedWebPartManager(SP.WebParts.PersonalizationScope.shared);
+        var webPartDef = webPartMngr.importWebPart(webPartXml);
+        var webPart = webPartDef.get_webPart();
+        webPartMngr.addWebPart(webPart, 'Main', 1);
 
-
-/// LIST TEST
-return;
-spr.requestDigest('https://jolera365.sharepoint.com/sites/senate/subsite')
-  .then(function (digest) {
-    return spr.post('https://jolera365.sharepoint.com/sites/senate/subsite/_api/web/lists/GetByTitle(\'custom\')', {
-      body: {
-        '__metadata': { 'type': 'SP.List' },
-        'Title': 'TestList'
-      },
-      headers: {
-        'X-RequestDigest': digest,
-        'X-HTTP-Method': 'MERGE',
-        'IF-MATCH': '*'
-      }
+        ctx.load(webPart);
+        ctx.executeQueryAsync(
+        function() {
+            console.log(webPart);
+        },
+            function(){console.log('error')}
+        );
+        
     });
-  })
-  .then(function (response) {
-    if (response.statusCode === 204) {
-      console.log('List title updated!');
-    }
-  }, function (err) {
-    if (err.statusCode === 404) {
-      console.log('List not found!');
-    } else {
-      console.log(err);
-    }
-  });
-
-});
-
-
+})
 //Get new secure string pass:
 //Example of Use:
-//gulp createPass --pass MySecretPass
+//gulp createPass --pass MySecrePass
 gulp.task('createPass', function(){
     var Cpass = require("cpass");
     var cpass = new Cpass();

@@ -32,7 +32,16 @@ module.exports = (function() {
         getFields: {
             listTitle: "Travel Requests",
             siteUrl: context.siteUrl
+        },
+        csom:{
+            siteUrl:'https://jolera365.sharepoint.com/sites/senate/subsite/',
+            listTitle:'TestList',
+            listUrl: 'https://jolera365.sharepoint.com/sites/senate/subsite/Lists/',
+            siteUrl: 'https://jolera365.sharepoint.com/sites/senate/subsite/',
+            siteRelativeUrl: '/sites/senate/subsite/',
+            webPartPage: 'Lists/custom/NewForm.aspx'
         }
+
     };
 
     return config;
