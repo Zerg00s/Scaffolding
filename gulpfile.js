@@ -219,14 +219,14 @@ gulp.task('scriptlink', function(){
 
     spr.requestDigest(config.getFields.siteUrl)
     .then(function (digest) {
-        return spr.post(config.getFields.siteUrl + "/_api/site/UserCustomActions('1ce30295-be9f-4019-9c6d-bdc81e0a5b25')", {
+        return spr.post(config.getFields.siteUrl + "/_api/site/UserCustomActions", {
             body: {
                '__metadata': { 'type': 'SP.UserCustomAction' }, 'Location':'ScriptLink',
                     'Sequence':'101', 'Title':'CustomForms', 'ScriptSrc':'~siteCollection/_catalogs/masterpage/src/form_templates.js' 
             },
             headers: {
                 'X-RequestDigest': digest,
-                "X-HTTP-Method": "MERGE"
+                "X-HTTP-Method": "POST"
             }
         })
         .then(function (response) {
