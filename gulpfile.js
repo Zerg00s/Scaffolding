@@ -156,3 +156,43 @@ gulp.task('createPass', function(){
     var secured = cpass.encode(password);
     console.log(secured);
 } );
+
+gulp.task('scriptlink', function(){
+    var cpass = new Cpass();
+    var credentialOptions = {
+        'username': _privateConfig.username,
+        'password': cpass.decode(_privateConfig.password),
+    };
+    var spr = require('sp-request').create(credentialOptions);
+
+    spr.get(config.getFields.siteUrl + "/_api/site/UserCustomActions")
+    .then(function (response) {
+        var results = response.body.d.results;
+        for (var x = 0; x < results.length; x++) {
+            var customAction = results[x];
+            console.log(customAction);                
+        }
+    })
+    .catch(function(err){
+        console.log(err);
+    });
+
+    spr.requestDigest(config.getFields.siteUrl)
+    .then(function (digest) {
+        return spr.post(config.getFields.siteUrl + "/_api/site/UserCustomActions('1ce30295-be9f-4019-9c6d-bdc81e0a5b25')", {
+            body: {
+               '__metadata': { 'type': 'SP.UserCustomAction' }, 'Location':'ScriptLink',
+                    'Sequence':'101', 'Title':'CustomForms', 'ScriptSrc':'~siteCollection/_catalogs/masterpage/src/form_templates.js' 
+            },
+            headers: {
+                'X-RequestDigest': digest,
+                "X-HTTP-Method": "MERGE"
+            }
+        })
+        .then(function (response) {
+            console.log('Custom action updated');
+        }, function (err) {
+            console.log(err);
+        });
+    });
+});
