@@ -1,10 +1,9 @@
 {
   "name": "sp-scaffold",
-  "version": "0.0.1",
-  "description": "",
+  "version": "0.0.2",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node src/app.js"
   },
   "author": "Denis Molodtsov",
   "license": "MIT",
@@ -20,5 +19,14 @@
     "gulp-watch": "*",
     "sp-request": "*",
     "sppull": "*"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zerg00s/Scaffolding.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zerg00s/Scaffolding/issues"
+  },
+  "homepage": "https://github.com/Zerg00s/Scaffolding#readme",
+  "description": ""
 }
