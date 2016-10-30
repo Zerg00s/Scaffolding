@@ -1,17 +1,12 @@
 {
   "generator-sppp": {
-    "appname": "scaffolding",
+    "appname": "sp-app",
     "appdesc": "",
     "author": "Denis Molodtsov",
     "siteUrl": "https://jolera365.sharepoint.com/sites/senate/",
     "username": "dmolodtsov@jolera.com",
-    "spRootFolder": "Shared%20Documents",
+    "spRootFolder": "_catalogs/masterpage/spf",
     "dlRootFolder": "./src",
-    "bowerlibs": [
-      "sp-pnp-js",
-      "jquery",
-      "fontawesome",
-      "momentjs"
-    ]
+    "bowerlibs": []
   }
 }

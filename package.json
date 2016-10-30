@@ -15,10 +15,11 @@
   "devDependencies": {
     "cpass": "*",
     "gulp": "*",
-    "gulp-spsave": "^*",
+    "gulp-spsave": "*",
     "gulp-watch": "*",
     "sp-request": "*",
-    "sppull": "*"
+    "sppull": "*",
+        "jsonfile": "*"
   },
   "repository": {
     "type": "git",
