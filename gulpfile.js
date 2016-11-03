@@ -94,10 +94,9 @@ gulp.task('getFields',function() {
     };
 
     var spr = require('sp-request').create(credentialOptions);
-
     spr.get(configOld.getFields.siteUrl + "/_api/web/lists/GetByTitle('" + configOld.getFields.listTitle + "')/fields?$filter=Hidden eq false")
     .then(function (response) {
-    
+        console.log(response.body.d.results);
         var results = response.body.d.results;
         var f = {};
         for (var x = 0; x < results.length; x++) {
@@ -111,7 +110,7 @@ gulp.task('getFields',function() {
             }
         }
 
-        //console.log('Title: ' + JSON.stringify(f, null, 4));
+        console.log('Title: ' + JSON.stringify(f, null, 4));
 
     })
     .catch(function(err){
@@ -169,7 +168,8 @@ gulp.task('createPass', function(){
 
 
 gulp.task('open', function(){
-    open('http://www.google.com');
+    var UrlToOpen = _privateConfig.siteUrl + _appConfig.spRootFolder;
+    open(UrlToOpen);
 })
 
 
