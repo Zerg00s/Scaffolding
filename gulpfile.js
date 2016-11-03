@@ -4,9 +4,8 @@ var spsave = require("gulp-spsave");
 var watch = require("gulp-watch");
 var prompt = require("gulp-prompt");
 var config = require('./gulp.config');
-var configOld =require('./gulp.config.old.js');  
+require('./gulp.config.extend.js');  
 var _appConfig = require('./config/app.conf.json');
-var _privateConfig = require("./config/_private.conf.json")
 var open = require('open');
 
 var Cpass = require("cpass");
@@ -74,8 +73,8 @@ gulp.task('getFields',function() {
     //read more about Cpass here: https://github.com/s-KaiNet/sp-request
     var cpass = new Cpass();
     var credentialOptions = {
-        'username': _privateConfig.username,
-        'password': cpass.decode(_privateConfig.password),
+        'username': config.context.username,
+        'password': config.context.password,
     };
 
     function initializeField(result) {
@@ -94,7 +93,7 @@ gulp.task('getFields',function() {
     };
 
     var spr = require('sp-request').create(credentialOptions);
-    spr.get(configOld.getFields.siteUrl + "/_api/web/lists/GetByTitle('" + configOld.getFields.listTitle + "')/fields?$filter=Hidden eq false")
+    spr.get(config.context.siteUrl + "/_api/web/lists/GetByTitle('" + config.extend.getFields.listTitle + "')/fields?$filter=Hidden eq false")
     .then(function (response) {
         console.log(response.body.d.results);
         var results = response.body.d.results;
@@ -120,13 +119,11 @@ gulp.task('getFields',function() {
 })
 
 gulp.task('csom', function(){
-    var Cpass = require("cpass");
-    var cpass = new Cpass();
-    csomapi.setLoaderOptions({url: config.csom.siteUrl});  //set CSOM library settings
-    var authCtx = new AuthenticationContext(config.csom.siteUrl);
-    authCtx.acquireTokenForUser(_privateConfig.username, cpass.decode(_privateConfig.password), function (err, data) {
+    csomapi.setLoaderOptions({url: config.extend.csom.siteUrl});  //set CSOM library settings
+    var authCtx = new AuthenticationContext(config.extend.csom.siteUrl);
+    authCtx.acquireTokenForUser(config.context.username, config.context.password, function (err, data) {
 
-        var ctx = new SP.ClientContext(config.csom.siteRelativeUrl);  //set root web
+        var ctx = new SP.ClientContext(config.extend.csom.siteRelativeUrl);  //set root web
         authCtx.setAuthenticationCookie(ctx);  //authenticate         
         var web = ctx.get_web();
 
@@ -139,7 +136,7 @@ gulp.task('csom', function(){
                             '<PartImageLarge>/_layouts/15/images/mscontl.gif</PartImageLarge>' +
                         '</WebPart>';
 
-        var file = web.getFileByServerRelativeUrl(config.csom.siteRelativeUrl + config.csom.webPartPage);
+        var file = web.getFileByServerRelativeUrl(config.extend.csom.siteRelativeUrl + config.extend.csom.webPartPage);
         var webPartMngr = file.getLimitedWebPartManager(SP.WebParts.PersonalizationScope.shared);
         var webPartDef = webPartMngr.importWebPart(webPartXml);
         var webPart = webPartDef.get_webPart();
@@ -168,7 +165,7 @@ gulp.task('createPass', function(){
 
 
 gulp.task('open', function(){
-    var UrlToOpen = _privateConfig.siteUrl + _appConfig.spRootFolder;
+    var UrlToOpen = config.context.siteUrl + "/" + config.appConf.spRootFolder;
     open(UrlToOpen);
 })
 
@@ -176,12 +173,12 @@ gulp.task('open', function(){
 gulp.task('scriptlink', function(){
     var cpass = new Cpass();
     var credentialOptions = {
-        'username': _privateConfig.username,
-        'password': cpass.decode(_privateConfig.password),
+        'username': config.context.username,
+        'password': config.context.password,
     };
     var spr = require('sp-request').create(credentialOptions);
 
-    spr.get(config.getFields.siteUrl + "/_api/site/UserCustomActions")
+    spr.get(config.context.siteUrl + "/_api/site/UserCustomActions")
     .then(function (response) {
         var results = response.body.d.results;
         for (var x = 0; x < results.length; x++) {
@@ -193,9 +190,9 @@ gulp.task('scriptlink', function(){
         console.log(err);
     });
 
-    spr.requestDigest(config.getFields.siteUrl)
+    spr.requestDigest(config.context.siteUrl)
     .then(function (digest) {
-        return spr.post(config.getFields.siteUrl + "/_api/site/UserCustomActions", {
+        return spr.post(config.context.siteUrl + "/_api/site/UserCustomActions", {
             body: {
                '__metadata': { 'type': 'SP.UserCustomAction' }, 'Location':'ScriptLink',
                     'Sequence':'101', 'Title':'CustomForms', 'ScriptSrc':'~siteCollection/_catalogs/masterpage/src/form_templates.js' 

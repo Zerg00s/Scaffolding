@@ -20,8 +20,10 @@
     "gulp-spsave": "*",
     "gulp-watch": "*",
     "sp-request": "*",
+    "gulp-prompt": "*",
     "sppull": "*",
-    "jsonfile": "*"
+    "jsonfile": "*",
+    "typings": "*"
   },
   "repository": {
     "type": "git",
