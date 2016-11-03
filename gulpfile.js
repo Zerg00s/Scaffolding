@@ -4,9 +4,13 @@ var spsave = require("gulp-spsave");
 var watch = require("gulp-watch");
 var prompt = require("gulp-prompt");
 var config = require('./gulp.config');
+var configOld =require('./gulp.config.old.js');  
+var _appConfig = require('./config/app.conf.json');
+var _privateConfig = require("./config/_private.conf.json")
+var open = require('open');
 
 var Cpass = require("cpass");
-//var _privateConfig = require("./config/_private.conf.json")
+
 var csomapi = require('csom-node')
 
 gulp.task('touch-conf', function() {
@@ -91,7 +95,7 @@ gulp.task('getFields',function() {
 
     var spr = require('sp-request').create(credentialOptions);
 
-    spr.get(config.getFields.siteUrl + "/_api/web/lists/GetByTitle('" + config.getFields.listTitle + "')/fields?$filter=Hidden eq false")
+    spr.get(configOld.getFields.siteUrl + "/_api/web/lists/GetByTitle('" + configOld.getFields.listTitle + "')/fields?$filter=Hidden eq false")
     .then(function (response) {
     
         var results = response.body.d.results;
@@ -162,6 +166,12 @@ gulp.task('createPass', function(){
     var secured = cpass.encode(password);
     console.log(secured);
 } );
+
+
+gulp.task('open', function(){
+    open('http://www.google.com');
+})
+
 
 gulp.task('scriptlink', function(){
     var cpass = new Cpass();
