@@ -5,7 +5,7 @@ var watch = require("gulp-watch");
 var prompt = require("gulp-prompt");
 var config = require('./gulp.config');
 require('./gulp.config.extend.js');  
-var _appConfig = require('./config/app.conf.json');
+
 var open = require('open');
 
 var Cpass = require("cpass");
