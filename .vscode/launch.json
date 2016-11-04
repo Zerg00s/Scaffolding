@@ -43,12 +43,12 @@
             "outFiles": []
         },
           {
-            "name": "scriptlink",
+            "name": "publish",
             "type": "node",
             "request": "launch",
             "program": "${workspaceRoot}/node_modules/gulp/bin/gulp.js",
             "stopOnEntry": false,
-            "args": ["scriptlink"],
+            "args": ["publish"],
             "cwd": "${workspaceRoot}",
             "preLaunchTask": null,
             "runtimeExecutable": null,

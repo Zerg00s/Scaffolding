@@ -1,0 +1,7 @@
+# local config template
+# copy to local.yaml and update values with your configuration
+username: ivan@qpickit.com
+password: c42953d83de04996481aa680b4c7ab7340edb5eb23b41422a69808780f5a63b85b52c267d6e47efebd47f0a8b3696cf2270U6QJioH76JWc66GtTQg==
+siteUrl: https://qpickit.sharepoint.com/sites/developer
+webRelativeUrl: /
+ 

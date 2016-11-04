@@ -3,26 +3,18 @@ var sppull = require('sppull').sppull;
 var spsave = require("gulp-spsave");
 var watch = require("gulp-watch");
 var prompt = require("gulp-prompt");
-var config = require('./gulp.config');
-require('./gulp.config.extend.js');  
-
+var config = require('./config.extend');
 var open = require('open');
-
-var Cpass = require("cpass");
-
 var csomapi = require('csom-node')
 
 gulp.task('touch-conf', function() {
     console.log("Checking configs...");
-    gulp.src('')
-        .pipe(prompt.prompt(config.prompts, function(res) {
-            config = config.rebuildConfig(res, config);
-        }));
+    return gulp.src('').pipe(config.validateLocalConfig());
 });
 
 gulp.task('sppull-all', ['touch-conf'], function(cb) {
     console.log("Pulling from SharePoint");
-    sppull(config.sppull.context, config.sppull.options)
+    sppull(config, config)
         .then(function() {
             cb();
         })
@@ -33,19 +25,37 @@ gulp.task('sppull-all', ['touch-conf'], function(cb) {
 
 gulp.task("watch-assets", ['touch-conf'], function () {
     console.log("Watch Assets");
-    return watch(config.watch.assets, function (event) {
+    
+    var assets = config.dlRootFolder.replace("./", "") + "/**/*.*";
+    var base = config.dlRootFolder.replace("./", "");
+    var coreOptions = {
+        siteUrl: config.siteUrl,
+        folder: config.spRootFolder,
+        flatten: false,
+        checkin: true,
+        checkinType: 1
+    };
+    return watch(assets, function (event) {
         console.log(event.path);
         gulp.src(event.path, {
-            base: config.watch.base
-        }).pipe(spsave(config.spsave.coreOptions, config.spsave.creds));
+            base: base
+        }).pipe(spsave(coreOptions, config));
     });
 });
 
 gulp.task("publish", ['touch-conf'], function () {
     console.log("Publish Assets");
-    return gulp.src(config.watch.assets, {
-        base: config.watch.base
-    }).pipe(spsave(config.spsave.coreOptions, config.spsave.creds));
+    var assets = config.dlRootFolder.replace("./", "") + "/**/*.*";
+    var base = config.dlRootFolder.replace("./", "");
+    var coreOptions = {
+        siteUrl: config.siteUrl,
+        folder: config.spRootFolder,
+        flatten: false,
+        checkin: true,
+        checkinType: 1
+    };
+    return gulp.src(assets, { base: base })
+            .pipe(spsave(coreOptions, config));
 });
 
 
@@ -73,8 +83,8 @@ gulp.task('getFields',function() {
     //read more about Cpass here: https://github.com/s-KaiNet/sp-request
     var cpass = new Cpass();
     var credentialOptions = {
-        'username': config.context.username,
-        'password': config.context.password,
+        'username': config.username,
+        'password': config.password,
     };
 
     function initializeField(result) {
@@ -93,7 +103,7 @@ gulp.task('getFields',function() {
     };
 
     var spr = require('sp-request').create(credentialOptions);
-    spr.get(config.context.siteUrl + "/_api/web/lists/GetByTitle('" + config.extend.getFields.listTitle + "')/fields?$filter=Hidden eq false")
+    spr.get(config.siteUrl + config.webRelativeUrl + "/_api/web/lists/GetByTitle('" + config.gulp.getFields.listTitle + "')/fields?$filter=Hidden eq false")
     .then(function (response) {
         console.log(response.body.d.results);
         var results = response.body.d.results;
@@ -171,14 +181,13 @@ gulp.task('open', function(){
 
 
 gulp.task('scriptlink', function(){
-    var cpass = new Cpass();
     var credentialOptions = {
-        'username': config.context.username,
-        'password': config.context.password,
+        'username': config.username,
+        'password': config.password,
     };
     var spr = require('sp-request').create(credentialOptions);
 
-    spr.get(config.context.siteUrl + "/_api/site/UserCustomActions")
+    spr.get(config.siteUrl + "/_api/site/UserCustomActions")
     .then(function (response) {
         var results = response.body.d.results;
         for (var x = 0; x < results.length; x++) {
@@ -190,9 +199,9 @@ gulp.task('scriptlink', function(){
         console.log(err);
     });
 
-    spr.requestDigest(config.context.siteUrl)
+    spr.requestDigest(config.siteUrl)
     .then(function (digest) {
-        return spr.post(config.context.siteUrl + "/_api/site/UserCustomActions", {
+        return spr.post(config.siteUrl + "/_api/site/UserCustomActions", {
             body: {
                '__metadata': { 'type': 'SP.UserCustomAction' }, 'Location':'ScriptLink',
                     'Sequence':'101', 'Title':'CustomForms', 'ScriptSrc':'~siteCollection/_catalogs/masterpage/src/form_templates.js' 
