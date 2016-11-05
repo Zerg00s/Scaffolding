@@ -175,7 +175,7 @@ gulp.task('createPass', function(){
 
 
 gulp.task('open', function(){
-    var UrlToOpen = config.context.siteUrl + "/" + config.appConf.spRootFolder;
+    var UrlToOpen = config.siteUrl + "/" + config.spRootFolder;
     open(UrlToOpen);
 })
 
