@@ -131,6 +131,9 @@ gulp.task('getFields',function() {
 
 // Add CEWP to all List forms 
 gulp.task('addCEWP', function(){
+    var siteRelativeUrl = str = '/' +  config.gulp.csom.siteUrl.replace(/^(?:\/\/|[^\/]+)*\//, "");
+    console.log(str);
+
     csomapi.setLoaderOptions({url: config.gulp.csom.siteUrl});  //set CSOM library settings
     var authCtx = new AuthenticationContext(config.gulp.csom.siteUrl);
     authCtx.acquireTokenForUser(config.username, config.password, function (err, data) {
@@ -146,7 +149,7 @@ gulp.task('addCEWP', function(){
             return defer.promise;
         };
 
-        var ctx = new SP.ClientContext(config.gulp.csom.siteRelativeUrl);  //set root web
+        var ctx = new SP.ClientContext(siteRelativeUrl);  //set root web
         authCtx.setAuthenticationCookie(ctx);  //authenticate         
         var web = ctx.get_web();
 
