@@ -5,7 +5,8 @@ var watch = require("gulp-watch");
 var prompt = require("gulp-prompt");
 var config = require('./config.extend');
 var open = require('open');
-var csomapi = require('csom-node')
+var csomapi = require('csom-node');
+var deferred = require('deferred');
 
 gulp.task('touch-conf', function() {
     console.log("Checking configs...");
@@ -128,37 +129,109 @@ gulp.task('getFields',function() {
 
 })
 
-gulp.task('csom', function(){
-    csomapi.setLoaderOptions({url: config.extend.csom.siteUrl});  //set CSOM library settings
-    var authCtx = new AuthenticationContext(config.extend.csom.siteUrl);
-    authCtx.acquireTokenForUser(config.context.username, config.context.password, function (err, data) {
+// Add CEWP to all List forms 
+gulp.task('addCEWP', function(){
+    csomapi.setLoaderOptions({url: config.gulp.csom.siteUrl});  //set CSOM library settings
+    var authCtx = new AuthenticationContext(config.gulp.csom.siteUrl);
+    authCtx.acquireTokenForUser(config.username, config.password, function (err, data) {
 
-        var ctx = new SP.ClientContext(config.extend.csom.siteRelativeUrl);  //set root web
+        //Custom executeQuery that returns a promise! :)
+        // you can also pass optional data to the promise
+        SP.ClientContext.prototype.executeQuery = function(data) {
+            var defer = deferred();
+            this.executeQueryAsync(
+                function(){ defer.resolve(data); },
+                function(){ defer.reject(data); }
+            );
+            return defer.promise;
+        };
+
+        var ctx = new SP.ClientContext(config.gulp.csom.siteRelativeUrl);  //set root web
         authCtx.setAuthenticationCookie(ctx);  //authenticate         
         var web = ctx.get_web();
 
-        var webPartXml = '<?xml version="1.0" encoding="utf-8"?>' +
+        var list = web.get_lists().getByTitle(config.gulp.csom.listTitle);
+        ctx.load(list, [ // Request extra list properties:
+            "DefaultEditFormUrl",
+            "DefaultNewFormUrl",
+            "DefaultDisplayFormUrl", 
+            "Title"]);
+
+        ctx.executeQuery()
+        .then( function () {
+            console.log(list.get_title());
+            var dispForm  = list.get_defaultEditFormUrl();
+            var editForm  = list.get_defaultNewFormUrl();
+            var newForm   =  list.get_defaultDisplayFormUrl();
+            var forms =  [dispForm, editForm, newForm];
+            return forms;
+        })
+        .then(function(forms){
+
+            var webPartColleciton = [];
+            forms.forEach(function(form) {
+                var file = web.getFileByServerRelativeUrl(form);
+                var webPartMngr = file.getLimitedWebPartManager(SP.WebParts.PersonalizationScope.shared);
+                var webparts = webPartMngr.get_webParts();
+                ctx.load(webparts); 
+                webPartColleciton.push(webparts);
+            });
+        
+            return ctx.executeQuery({'webparts':webPartColleciton,'forms': forms});  
+        })
+        .then(function(data) {            
+              try{
+                  data.webparts.forEach(function(webparts){
+                    for(var i = 1; i < webparts.getEnumerator().$8_0.length; i++){
+                      var webpart = webparts.get_item(i);
+                      webpart.deleteWebPart();
+                     }
+                  })
+              }
+              catch(Example){
+                    console.log(Example);
+              }
+               return ctx.executeQuery(data.forms);
+            })
+        .then(function(forms) {
+                var webPartXml = '<?xml version="1.0" encoding="utf-8"?>' +
                         '<WebPart xmlns="http://schemas.microsoft.com/WebPart/v2">' +
                             '<Assembly>Microsoft.SharePoint, Version=16.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c</Assembly>' + 
                             '<TypeName>Microsoft.SharePoint.WebPartPages.ContentEditorWebPart</TypeName>' + 
-                            '<Title>$Resources:core,ContentEditorWebPartTitle;</Title>' +
+                            '<Title>Content Editor</Title>' +
                             '<Description>$Resources:core,ContentEditorWebPartDescription;</Description>' +
                             '<PartImageLarge>/_layouts/15/images/mscontl.gif</PartImageLarge>' +
                         '</WebPart>';
+                forms.forEach(function(form){
+                    var file = web.getFileByServerRelativeUrl(form);
+                    var webPartMngr = file.getLimitedWebPartManager(SP.WebParts.PersonalizationScope.shared);
+                    var webPartDef = webPartMngr.importWebPart(webPartXml);
+                    var webPart = webPartDef.get_webPart();
+                    webPartMngr.addWebPart(webPart, 'Main', 1);
 
-        var file = web.getFileByServerRelativeUrl(config.extend.csom.siteRelativeUrl + config.extend.csom.webPartPage);
-        var webPartMngr = file.getLimitedWebPartManager(SP.WebParts.PersonalizationScope.shared);
-        var webPartDef = webPartMngr.importWebPart(webPartXml);
-        var webPart = webPartDef.get_webPart();
-        webPartMngr.addWebPart(webPart, 'Main', 1);
+                    ctx.load(webPart);
 
-        ctx.load(webPart);
-        ctx.executeQueryAsync(
-        function() {
-            console.log(webPart);
-        },
-            function(){console.log('error')}
-        );
+                    ctx.executeQueryAsync(
+                    function(info) {
+                        //get base site url:
+                        pathArray = config.gulp.csom.siteUrl.split( '/' );
+                        protocol = pathArray[0];
+                        host = pathArray[2];
+                        url = protocol + '//' + host;
+
+                        //\033[31m red console color
+                        console.info('Web part successfully added to the form '+ url + form);
+                        var UrlToOpen = config.siteUrl + "/" + config.spRootFolder;
+                        open(url + form);
+                    },
+                        function(){console.log('error')}
+                    );
+                })
+
+        })// then
+        .catch(function(err){
+            console.log(err);
+        });
         
     });
 })

@@ -7,7 +7,6 @@ gulp:
   csom: 
     siteUrl: https://jolera365.sharepoint.com/sites/senate/subsite/
     listTitle: TestList
-    listUrl: https://jolera365.sharepoint.com/sites/senate/subsite/Lists/
     siteRelativeUrl: /sites/senate/subsite/
     webPartPage: Lists/custom/NewForm.aspx
 # Define required parameters in local.yaml file. 
