@@ -8,7 +8,6 @@ var open = require('open');
 var csomapi = require('csom-node');
 var deferred = require('deferred');
 
-
 // Promts you to choose a task 
 gulp.task('default', function() {
     var taskNames = [];
@@ -24,9 +23,8 @@ gulp.task('default', function() {
             name: 'task',
             message: 'Choose task name',
             choices: taskNames
-        }, function(res){
-            //value is in res.task (the name option gives the key)
-            gulp.tasks[res.task].fn();
+        }, function(userResponse){
+            gulp.tasks[userResponse.task].fn();
         }));
 });
 
@@ -98,8 +96,6 @@ gulp.task("replace", function () {
         });
     });
  });
-
-
 
 
 //get list of fields from the sp list
