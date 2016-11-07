@@ -20,17 +20,13 @@ gulp.task('default', function() {
 
     return gulp.src('*').pipe(
         prompt.prompt({
-            type: 'checkbox',
-            name: 'tasks',
+            type: 'list',
+            name: 'task',
             message: 'Choose task name',
             choices: taskNames
         }, function(res){
             //value is in res.task (the name option gives the key)
-            console.log(res);
-            res.tasks.forEach(function(taskName){
-                console.log(taskName);
-                gulp.tasks[taskName].fn();
-            }); 
+            gulp.tasks[res.task].fn();
         }));
 });
 
