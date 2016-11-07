@@ -8,6 +8,33 @@ var open = require('open');
 var csomapi = require('csom-node');
 var deferred = require('deferred');
 
+
+// Promts you to choose a task 
+gulp.task('default', function() {
+    var taskNames = [];
+    for (var taskName in gulp.tasks) {
+        if (gulp.tasks.hasOwnProperty(taskName)) {
+            taskNames.push(taskName);
+        }
+    }
+
+    return gulp.src('*').pipe(
+        prompt.prompt({
+            type: 'checkbox',
+            name: 'tasks',
+            message: 'Choose task name',
+            choices: taskNames
+        }, function(res){
+            //value is in res.task (the name option gives the key)
+            console.log(res);
+            res.tasks.forEach(function(taskName){
+                console.log(taskName);
+                gulp.tasks[taskName].fn();
+            }); 
+        }));
+});
+
+
 gulp.task('touch-conf', function() {
     console.log("Checking configs...");
     return gulp.src('').pipe(config.validateLocalConfig());

@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/node_modules/gulp/bin/gulp.js", // we will run gulp.js when hitting F5
             "stopOnEntry": false,
-            "args": ["publish"], // name of the gulp task that will be run when we click F5 in VS Code
+            "args": [], // name of the gulp task that will be run when we click F5 in VS Code
             "cwd": "${workspaceRoot}",
             "preLaunchTask": null,
             "runtimeExecutable": null,
@@ -17,7 +17,7 @@
             "env": {
                 "NODE_ENV": "development"
             },
-            "console": "internalConsole",
+            "console":"externalTerminal",
             "sourceMaps": false,
             "outFiles": []
         },
